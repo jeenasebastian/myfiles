@@ -1,0 +1,81 @@
+from settings import CORPUS,CORPUS_MAP
+from models import bert_similarity
+from utils import filter_max_unique_response
+import pandas as pd
+
+
+
+# IT
+file = pd.ExcelFile('test/charbot-data-edit(437)_SL03 (Helpdesk).xlsx')
+sub_categories = file.sheet_names[0:5]
+for i in sub_categories:
+    df = pd.read_excel('test/charbot-data-edit(437)_SL03 (Helpdesk).xlsx', sheet_name=i)
+    df['Sophia Response'] = ''
+    sub_category = i[3:-8]
+    CORPUS_VALS = list(filter(lambda x: x['category'] == "IT" and x['type'] == sub_category, CORPUS))
+    if CORPUS_VALS==[]:
+        CORPUS_VALS = list(filter(lambda x: x['category'] == "IT" and x['type'] == sub_category.title(), CORPUS))
+    questions = [x['question'] for x in CORPUS_VALS]
+    embeddings = [x['bert_embed'] for x in CORPUS_VALS]
+    for j in range(len(df)):
+        scores = bert_similarity(
+            questions=questions,
+            embeddings=embeddings,
+            sentence=df['Queries'][j]
+        )
+        responses = [(x[0], x[1], CORPUS_MAP[x[0]]) for x in scores]
+        clean_responses = filter_max_unique_response(responses)
+        Sophia_Response = str(clean_responses[0][2]['response']).replace("&lt;", "<").replace("&gt;", ">").replace('&#x27;', '\'').replace('&amp;', '&').replace('&quot;','\"')
+        df.at[j, 'Sophia Response'] = Sophia_Response
+    df['Compare']=df.apply(lambda row: True if (str(row['Response']) == row['Sophia Response']) else False, axis=1)
+    df.to_excel("test/IT_{0}.xlsx".format(i),sheet_name=i)
+
+# GA
+file = pd.ExcelFile('test/chatbot-GA_merged (SL,Rex,Jeena).xlsx')
+sub_categories = file.sheet_names[0:5]
+for i in sub_categories:
+    df = pd.read_excel('test/chatbot-GA_merged (SL,Rex,Jeena).xlsx', sheet_name=i)
+    df['Sophia Response'] = ''
+    sub_category = i[3:].replace(" Related", "")
+    CORPUS_VALS = list(filter(lambda x: x['category'] == "GA" and x['type'] == sub_category, CORPUS))
+    if CORPUS_VALS==[]:
+        CORPUS_VALS = list(filter(lambda x: x['category'] == "GA" and x['type'] == sub_category.title(), CORPUS))
+    questions = [x['question'] for x in CORPUS_VALS]
+    embeddings = [x['bert_embed'] for x in CORPUS_VALS]
+    for j in range(len(df)):
+        scores = bert_similarity(
+            questions=questions,
+            embeddings=embeddings,
+            sentence=df['Queries'][j]
+        )
+        responses = [(x[0], x[1], CORPUS_MAP[x[0]]) for x in scores]
+        clean_responses = filter_max_unique_response(responses)
+        Sophia_Response = str(clean_responses[0][2]['response']).replace("&lt;", "<").replace("&gt;", ">").replace('&#x27;', '\'').replace('&amp;', '&').replace('&quot;','\"')
+        df.at[j, 'Sophia Response'] = Sophia_Response
+    df['Compare']=df.apply(lambda row: True if (str(row['Response']) == row['Sophia Response']) else False, axis=1)
+    df.to_excel("test/GA_{0}.xlsx".format(i),sheet_name=i)
+
+#HR
+file = pd.ExcelFile('test/chatbot-HR_merged (SL,Rex,Jeena).xlsx')
+sub_categories = file.sheet_names[0:7]
+for i in sub_categories:
+    df = pd.read_excel('test/chatbot-HR_merged (SL,Rex,Jeena).xlsx', sheet_name=i)
+    df['Sophia Response'] = ''
+    sub_category = i[3:].replace(" Related", "")
+    CORPUS_VALS = list(filter(lambda x: x['category'] == "HR" and x['type'] == sub_category, CORPUS))
+    if CORPUS_VALS==[]:
+        CORPUS_VALS = list(filter(lambda x: x['category'] == "HR" and x['type'] == sub_category.title(), CORPUS))
+    questions = [x['question'] for x in CORPUS_VALS]
+    embeddings = [x['bert_embed'] for x in CORPUS_VALS]
+    for j in range(len(df)):
+        scores = bert_similarity(
+            questions=questions,
+            embeddings=embeddings,
+            sentence=df['Queries'][j]
+        )
+        responses = [(x[0], x[1], CORPUS_MAP[x[0]]) for x in scores]
+        clean_responses = filter_max_unique_response(responses)
+        Sophia_Response = str(clean_responses[0][2]['response']).replace("&lt;", "<").replace("&gt;", ">").replace('&#x27;', '\'').replace('&amp;', '&').replace('&quot;','\"')
+        df.at[j, 'Sophia Response'] = Sophia_Response
+    df['Compare']=df.apply(lambda row: True if (str(row['Response']) == row['Sophia Response']) else False, axis=1)
+    df.to_excel("test/HR_{0}.xlsx".format(i),sheet_name=i)
